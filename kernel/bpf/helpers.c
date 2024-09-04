@@ -188,7 +188,9 @@ const struct bpf_func_proto bpf_htm_abort_proto = {
 
 BPF_CALL_0(bpf_htm_end)
 {
-        _xend();
+	int ret;
+        if ((ret = _xtest()) != 0)	// only abort if transaction running
+		_xend();
         return 0;
 }
 

@@ -677,9 +677,14 @@ static void *__htab_map_lookup_elem(struct bpf_map *map, void *key)
 	struct hlist_nulls_head *head;
 	struct htab_elem *l;
 	u32 hash, key_size;
+	int ret;
 
 	WARN_ON_ONCE(!rcu_read_lock_held() && !rcu_read_lock_trace_held() &&
 		     !rcu_read_lock_bh_held());
+
+	if ((ret = _xtest()) != 0) {  	// only abort if transaction running
+                _xend();
+	}
 
 	key_size = map->key_size;
 
