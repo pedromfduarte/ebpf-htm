@@ -16,6 +16,8 @@
 #include "map_in_map.h"
 #include <linux/bpf_mem_alloc.h>
 
+#include <linux/rtm.h>
+
 #define HTAB_CREATE_FLAG_MASK						\
 	(BPF_F_NO_PREALLOC | BPF_F_NO_COMMON_LRU | BPF_F_NUMA_NODE |	\
 	 BPF_F_ACCESS_MASK | BPF_F_ZERO_SEED)
@@ -677,20 +679,20 @@ static void *__htab_map_lookup_elem(struct bpf_map *map, void *key)
 	struct hlist_nulls_head *head;
 	struct htab_elem *l;
 	u32 hash, key_size;
-	int ret;
+	int ret = -1;
 
 	WARN_ON_ONCE(!rcu_read_lock_held() && !rcu_read_lock_trace_held() &&
 		     !rcu_read_lock_bh_held());
-
-	if ((ret = _xtest()) != 0) {  	// only abort if transaction running
-                _xend();
-	}
 
 	key_size = map->key_size;
 
 	hash = htab_map_hash(key, key_size, htab->hashrnd);
 
 	head = select_bucket(htab, hash);
+
+        if ((ret = _xtest()) != 0) {    // only abort if transaction running
+                _xend();
+        }
 
 	l = lookup_nulls_elem_raw(head, hash, key, key_size, htab->n_buckets);
 
