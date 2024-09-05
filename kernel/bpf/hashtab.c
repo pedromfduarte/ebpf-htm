@@ -690,11 +690,11 @@ static void *__htab_map_lookup_elem(struct bpf_map *map, void *key)
 
 	head = select_bucket(htab, hash);
 
-        if ((ret = _xtest()) != 0) {    // only abort if transaction running
-                _xend();
-        }
-
 	l = lookup_nulls_elem_raw(head, hash, key, key_size, htab->n_buckets);
+
+	/*if ((ret = _xtest()) != 0) {    // only abort if transaction running
+                _xend();
+        }*/
 
 	return l;
 }
