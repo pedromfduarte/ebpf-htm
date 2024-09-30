@@ -163,9 +163,23 @@ const struct bpf_func_proto bpf_get_smp_processor_id_proto = {
 
 //#if defined(CONFIG_X86_TSX_ON) || defined(CONFIG_X86_TSX_AUTO)
 
-BPF_CALL_0(bpf_htm_begin)
+/*BPF_CALL_0(bpf_htm_begin)
 {
         return _xbegin();
+}*/
+
+BPF_CALL_1(bpf_htm_begin, int *, sgl_locked)
+{
+	int r;
+	r = _xbegin();
+	if (r == _XBEGIN_STARTED) {
+		if (sgl_locked && *sgl_locked) {
+	                _xabort(0);
+			return 0;
+		}
+		return r;
+	}
+	else return r;
 }
 
 const struct bpf_func_proto bpf_htm_begin_proto = {
