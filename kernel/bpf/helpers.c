@@ -190,7 +190,7 @@ const struct bpf_func_proto bpf_htm_begin_proto = {
 
 BPF_CALL_0(bpf_htm_abort)
 {
-        //return _xabort(); // provavelmente tem de ter 1arg, xabort leva arg
+        _xabort(0); 
         return 0;
 }
 
